@@ -1,0 +1,48 @@
+The main function is in the client.cpp file. In endless while loop, the commands
+entered by the client are read. The entered сommand is processed in the
+valid_input function and in case command is valid (one word), it is sent to the
+handle_command function, which calls the required function. The command can also
+be entered with whitespaces, the program will still recognize it.
+Function handle_response processes the response received from the server
+and returns response structure:
+struct response {
+    int status;
+    std :: string status_message;
+    std :: vector <std :: string> cookies;
+    nlohmann :: json json_field;
+};
+This function can extract all cookies and will save them in a vector.
+This function is good only if the answer does not contain data / the data is in
+json format.
+To handle the situations with "Too many requests, please try again later",
+I create a json with "error" and this message.
+For each command after I received an answer, I execute needed operations for
+this command as well check the "status" field. If it is different from 200 (OK)
+(or 201 (CREATED) at register), the status message (was extracted from
+server'sresponse) and the content of the "error" field in the attached JSON
+will be displayed.
+If the status was ok, the message corresponding to the command and the JSON
+content (if exists) will be displayed.
+For JSON parsing I used the nlohmann library (https://github.com/nlohmann/json).
+From this library I have used functions for creating json, reading the entire
+content (with the help of the iterator) and accessing a certain field in json.
+Functions for connecting to the server (opening the connection, receiving and
+sending messages) are in helpers.cpp and buffer.cpp files.
+Functions for creating requests could be found in the create_requests.cpp file.
+Functions can create requests with as many additional cookies and headers
+as needed.
+
+- If the message is sent to the server but server has closed the
+connection, the connection is reopened and one more attempt is made to send
+the message. If the sending of the message still fails, "Server is not
+responding!" message is displayed. Then the client decides whether to leave,
+or further try to establish a connection to the server.
+- Extracted cookies are stored in the saved_cookies vector.
+- If the client tries to log in when he is already logged in, will be displayed
+"You are already logged in!" message.
+- If the client enters an invalid input when
+number is required, the corresponding message will be displayed.
+- If the invalid command is entered, the corresponding message will be
+displayed.
+- For cases with invalid input for commands / wrong order of commands will be
+displayed error message received from server.
